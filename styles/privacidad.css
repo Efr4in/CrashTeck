@@ -1,0 +1,23 @@
+/* ============================================
+   PRIVACIDAD
+   ============================================ */
+
+main.privacidad{
+  display:flex;flex-direction:column;justify-content:center;
+}
+
+.section-head{max-width:640px;margin-bottom:60px;}
+.section-head .eyebrow{margin-bottom:14px;}
+.section-head h2{font-size:clamp(1.8rem,3.6vw,2.6rem);}
+
+.policy{
+  max-width:720px;
+  border-left:1px solid var(--line);
+  padding-left:32px;
+}
+.policy .item{margin-bottom:34px;}
+.policy .item .num{
+  font-family:'Fraunces',serif;color:var(--gold);font-size:0.85rem;display:block;margin-bottom:8px;
+}
+.policy .item h3{font-size:1.05rem;margin-bottom:8px;}
+.policy .item p{color:var(--text-muted);font-size:0.92rem;line-height:1.7;}

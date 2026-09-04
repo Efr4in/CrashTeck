@@ -1,0 +1,461 @@
+/* ============================================
+   BASE — variables, reset, tipografía, header, footer
+   Compartido por todas las páginas
+   ============================================ */
+
+:root{
+  --bg:#0A0D13;
+  --bg-panel:#131824;
+  --bg-panel-raised:#1B2230;
+  --gold:#C9A876;
+  --gold-soft:#D9BF95;
+  --cream:#F0E2C9;
+  --text:#EDEAE2;
+  --text-muted:#8D95A6;
+  --shadow-strong: rgba(0,0,0,0.65);
+  --line: rgba(201,168,118,0.18);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Manrope', sans-serif;
+  overflow-x:hidden;
+  min-height:100vh;
+  -webkit-user-select:none;
+  user-select:none;
+}
+
+/* Los campos de formulario siguen siendo seleccionables normalmente */
+input, textarea{
+  -webkit-user-select:text;
+  user-select:text;
+}
+
+img{
+  -webkit-user-drag:none;
+  user-drag:none;
+  -webkit-touch-callout:none;
+  pointer-events:auto;
+}
+
+h1,h2,h3,.display{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  letter-spacing:-0.01em;
+}
+
+a{color:inherit;text-decoration:none;}
+
+/* ---------- LOADING SCREEN ---------- */
+#loader{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:9999;
+  transition:opacity .5s ease, visibility .5s ease;
+}
+#loader.hide{opacity:0;visibility:hidden;pointer-events:none;}
+
+/* Evita el parpadeo del loader al navegar entre páginas ya cargadas en esta sesión */
+html.no-loader #loader{display:none;}
+
+.loader-ring-wrap{
+  position:relative;
+  width:146px;height:146px;
+  display:flex;align-items:center;justify-content:center;
+  transform-origin:center;
+  transition:transform .38s cubic-bezier(0.6,0,0.9,0.4), opacity .18s ease .22s;
+}
+.loader-ring-wrap.pop{
+  transform:scale(0.04);
+  opacity:0;
+}
+.loader-ring{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  transform:rotate(-90deg);
+  overflow:visible;
+}
+.loader-ring-bg{
+  fill:none;
+  stroke:rgba(255,255,255,0.08);
+  stroke-width:3;
+}
+.loader-ring-fg{
+  fill:none;
+  stroke:var(--gold);
+  stroke-width:3;
+  stroke-linecap:round;
+  stroke-dasharray:327;
+  stroke-dashoffset:327;
+  animation:ring-fill 1.7s cubic-bezier(0.4,0.1,0.2,1) forwards;
+  filter:drop-shadow(0 0 6px rgba(201,168,118,0.6));
+}
+@keyframes ring-fill{ to{ stroke-dashoffset:0; } }
+
+.loader-badge{
+  width:114px;height:114px;
+  border-radius:50%;
+  overflow:hidden;
+  box-shadow:0 0 0 1px rgba(201,168,118,0.15), 0 20px 50px var(--shadow-strong);
+}
+.loader-badge img{width:100%;height:100%;object-fit:cover;}
+
+.loader-spark{
+  position:fixed;
+  left:50%;top:50%;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 8px 2px rgba(201,168,118,0.7);
+  pointer-events:none;
+  z-index:9999;
+  transform:translate(-50%,-50%);
+  animation:spark-fly 0.6s ease-out forwards;
+}
+@keyframes spark-fly{
+  to{
+    transform:translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.3);
+    opacity:0;
+  }
+}
+
+/* ---------- NAV ---------- */
+header{
+  position:fixed;top:0;left:0;right:0;
+  z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 6vw;
+  background:linear-gradient(to bottom, rgba(10,13,19,0.9), rgba(10,13,19,0));
+  backdrop-filter:blur(6px);
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;}
+.brand-badge{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--bg-panel);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.brand-badge img{width:100%;height:100%;object-fit:contain;}
+.header-clock{
+  display:flex;flex-direction:row;align-items:center;gap:9px;
+  padding:8px 16px;
+  border-radius:10px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  line-height:1;
+}
+.header-clock-time{
+  font-family:'Fraunces',serif;
+  font-size:1.05rem;
+  font-weight:600;
+  color:var(--cream);
+  letter-spacing:0.02em;
+  white-space:nowrap;
+}
+.header-clock-time .blink{animation:clock-blink 1s step-start infinite;}
+@keyframes clock-blink{50%{opacity:0.25;}}
+.header-clock-ampm{
+  font-family:'Manrope',sans-serif;
+  font-size:0.6rem;
+  font-weight:700;
+  color:var(--gold);
+  letter-spacing:0.04em;
+  margin-left:2px;
+}
+.header-clock-sep{
+  width:1px;height:16px;
+  background:var(--line);
+}
+.header-clock-date{
+  font-size:0.68rem;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  color:var(--text-muted);
+  white-space:nowrap;
+}
+
+/* ---------- Links sociales (footer) ---------- */
+.footer-social{display:flex;gap:12px;}
+.social-link{
+  font-size:0.74rem;padding:6px 14px;border-radius:999px;
+  border:1px solid var(--line);color:var(--text-muted);
+  transition:border-color .25s ease, color .25s ease;
+}
+.social-link:hover{border-color:var(--gold);color:var(--cream);}
+.social-link.is-empty{pointer-events:none;opacity:0.3;}
+
+/* ---------- Badge de disponibilidad (hero) ---------- */
+.availability-badge{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:9px 18px;border-radius:999px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  font-size:0.78rem;color:var(--text-muted);
+}
+.availability-badge .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#7FA85C;
+  animation:pulse-dot 2s infinite;
+}
+.availability-badge.is-busy .dot{
+  background:#C97B4A;
+  animation:none;
+}
+@keyframes pulse-dot{
+  0%{box-shadow:0 0 0 0 rgba(127,168,92,0.5);}
+  70%{box-shadow:0 0 0 8px rgba(127,168,92,0);}
+  100%{box-shadow:0 0 0 0 rgba(127,168,92,0);}
+}
+nav ul{list-style:none;display:flex;gap:2.4rem;}
+nav a{
+  font-size:0.85rem;color:var(--text-muted);
+  position:relative;padding-bottom:4px;
+  transition:color .3s ease;
+}
+nav a.active,nav a:hover{color:var(--cream);}
+nav a.active::after{
+  content:'';position:absolute;left:0;right:0;bottom:-2px;height:1px;
+  background:var(--gold);
+}
+
+main{
+  min-height:100vh;
+  padding:14vh 6vw 8vh;
+  position:relative;
+}
+
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .8s ease, transform .8s ease;}
+.reveal.in{opacity:1;transform:translateY(0);}
+
+.eyebrow{
+  font-size:0.72rem;letter-spacing:0.35em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:22px;display:block;
+}
+
+.btn{
+  padding:14px 30px;border-radius:10px;
+  font-size:0.85rem;font-weight:600;
+  letter-spacing:0.02em;
+  display:inline-flex;align-items:center;gap:8px;
+  transition:transform .25s ease, box-shadow .25s ease;
+  border:1px solid transparent;
+  cursor:pointer;
+  font-family:'Manrope', sans-serif;
+}
+.btn-primary{
+  background:linear-gradient(180deg,var(--gold-soft),var(--gold));
+  color:#171208;
+}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(201,168,118,0.25);}
+.btn-ghost{
+  border:1px solid var(--line);
+  color:var(--cream);
+  background:rgba(255,255,255,0.02);
+}
+.btn-ghost:hover{transform:translateY(-3px);border-color:var(--gold);}
+
+footer{
+  padding:32px 6vw;
+  border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;
+  color:var(--text-muted);font-size:0.78rem;
+}
+
+.nav-toggle{
+  display:none;
+  position:fixed;
+  top:22px;right:6vw;
+  flex-direction:column;
+  justify-content:center;
+  gap:5px;
+  width:34px;height:34px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:9px;
+  cursor:pointer;
+  z-index:9100;
+  padding:0;
+}
+.nav-toggle span{
+  display:block;width:16px;height:2px;margin:0 auto;
+  background:var(--cream);
+  border-radius:2px;
+  transition:transform .3s ease, opacity .3s ease;
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;}
+.nav-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+@media (max-width:720px){
+  .nav-toggle{display:flex;}
+  header nav{display:none;}
+  footer{flex-direction:column;gap:8px;text-align:center;}
+}
+
+/* ---------- Overlay del menú móvil — independiente del header ---------- */
+.mobile-nav-overlay{
+  position:fixed;
+  top:0;left:0;
+  width:100vw;height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:2.4rem;
+  background:var(--bg);
+  z-index:9000;
+  transform:translateX(100%);
+  transition:transform .4s cubic-bezier(0.4,0,0.2,1);
+}
+.mobile-nav-overlay.open{transform:translateX(0);}
+.mobile-nav-overlay ul{list-style:none;display:flex;flex-direction:column;align-items:center;gap:2.4rem;}
+.mobile-nav-overlay a{
+  font-size:1.4rem;color:var(--text-muted);
+  font-family:'Fraunces',serif;
+  transition:color .3s ease;
+}
+.mobile-nav-overlay a.active,
+.mobile-nav-overlay a:hover{color:var(--gold);}
+.mobile-nav-overlay::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center, rgba(201,168,118,0.06), transparent 60%);
+  pointer-events:none;
+}
+
+/* ============================================
+   ADMIN — acceso rápido (modal de login en las páginas públicas)
+   ============================================ */
+.brand-badge{cursor:pointer;}
+
+.admin-modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(5,7,11,0.75);
+  backdrop-filter:blur(4px);
+  display:none;
+  align-items:center;justify-content:center;
+  z-index:2000;
+  padding:20px;
+}
+.admin-modal-overlay.show{display:flex;}
+
+.admin-modal{
+  width:min(440px, 100%);
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:28px;
+  box-shadow:0 30px 60px rgba(0,0,0,0.7);
+}
+.admin-modal-header{
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:22px;
+  text-align:left;
+}
+.admin-modal-header .brand-badge{width:46px;height:46px;flex-shrink:0;}
+.admin-modal-header h3{margin-bottom:2px;}
+.admin-modal-header p{font-size:0.78rem;color:var(--text-muted);}
+.admin-modal input[type="text"],
+.admin-modal input[type="password"],
+.admin-modal textarea{
+  width:100%;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px 14px;
+  color:var(--text);
+  font-family:'Manrope',sans-serif;
+  font-size:0.9rem;
+  margin-bottom:12px;
+  resize:vertical;
+}
+.admin-modal input:focus,
+.admin-modal textarea:focus{
+  outline:none;border-color:var(--gold);
+}
+.admin-modal .admin-password-field{position:relative;}
+.admin-modal .admin-password-field input{padding-right:42px;}
+.admin-modal .admin-password-field button{
+  position:absolute;right:10px;top:22px;transform:translateY(-50%);
+  background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;
+}
+.admin-modal .row{
+  display:flex;gap:10px;justify-content:flex-end;
+}
+.admin-error{
+  color:#e08b8b;font-size:0.8rem;margin:-4px 0 12px;min-height:1em;
+}
+
+/* ============================================
+   FONDO ESPACIAL — fijo, compartido por las 4 páginas
+   ============================================ */
+.space-canvas{
+  position:fixed;inset:0;
+  width:100vw;height:100vh;
+  display:block;
+  z-index:-1;
+  pointer-events:none;
+}
+
+.space-bubble{
+  position:fixed;
+  transform:translate(-50%, calc(-100% - 14px));
+  background:linear-gradient(160deg, var(--cream), #E4D2AE);
+  color:#171208;
+  font-family:'Manrope', sans-serif;
+  font-size:0.78rem;
+  font-weight:600;
+  padding:10px 16px;
+  border-radius:14px;
+  max-width:220px;
+  text-align:center;
+  box-shadow:0 14px 30px rgba(0,0,0,0.5);
+  opacity:0;
+  z-index:5;
+  pointer-events:none;
+  transition:opacity .35s ease, transform .35s ease;
+}
+.space-bubble::after{
+  content:'';
+  position:absolute;
+  left:50%;bottom:-7px;
+  transform:translateX(-50%);
+  border:7px solid transparent;
+  border-top-color:#E4D2AE;
+}
+.space-bubble.show{
+  opacity:1;
+  transform:translate(-50%, calc(-100% - 22px));
+}
+.space-bubble.hide{
+  opacity:0;
+  transform:translate(-50%, calc(-100% - 36px));
+}
+
+/* ============================================
+   TRANSICIÓN entre páginas — "polvo estelar"
+   ============================================ */
+#transitionCanvas{
+  position:fixed;inset:0;
+  width:100vw;height:100vh;
+  z-index:9998;
+  pointer-events:none;
+}
+body.page-leaving main,
+body.page-leaving header{
+  animation:page-dissolve .55s ease forwards;
+}
+body.page-entering main,
+body.page-entering header{
+  animation:page-assemble .6s ease forwards;
+}
+@keyframes page-dissolve{
+  to{ opacity:0; filter:blur(6px); transform:scale(0.98); }
+}
+@keyframes page-assemble{
+  from{ opacity:0; filter:blur(6px); transform:scale(0.98); }
+  to{ opacity:1; filter:blur(0); transform:scale(1); }
+}

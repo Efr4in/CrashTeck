@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrashTech — Efra | Desarrollador Freelance en La Paz, Bolivia</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png">
+
+<!-- SEO -->
+<meta name="description" content="Desarrollo aplicaciones web y sistemas a medida — desde plataformas educativas hasta herramientas internas. Diseño creativo, código funcional, responsabilidad.">
+
+<!-- Open Graph (vista previa al compartir el link) -->
+<meta property="og:title" content="CrashTech — Efra | Desarrollador Freelance en La Paz, Bolivia">
+<meta property="og:description" content="Desarrollo aplicaciones web y sistemas a medida — desde plataformas educativas hasta herramientas internas. Diseño creativo, código funcional, responsabilidad.">
+<meta property="og:image" content="img/og-preview.jpg">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_BO">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CrashTech — Efra | Desarrollador Freelance en La Paz, Bolivia">
+<meta name="twitter:description" content="Desarrollo aplicaciones web y sistemas a medida — desde plataformas educativas hasta herramientas internas. Diseño creativo, código funcional, responsabilidad.">
+<meta name="twitter:image" content="img/og-preview.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/inicio.css">
+<script>
+  if (sessionStorage.getItem('crashtechLoaded')) {
+    document.documentElement.classList.add('no-loader');
+  }
+</script>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-ring-wrap">
+    <svg class="loader-ring" viewBox="0 0 120 120">
+      <circle class="loader-ring-bg" cx="60" cy="60" r="52"></circle>
+      <circle class="loader-ring-fg" cx="60" cy="60" r="52"></circle>
+    </svg>
+    <div class="loader-badge"><img src="img/crash-circle.png" alt="CrashTech"></div>
+  </div>
+</div>
+
+<canvas id="spaceCanvas" class="space-canvas"></canvas>
+
+<header>
+  <div class="brand">
+    <div class="brand-badge"><img src="img/crash-logo.png" alt="CrashTech"></div>
+    <div class="header-clock" id="headerClock">
+      <span class="header-clock-time" id="headerClockTime">00:00<span class="header-clock-ampm" id="headerClockAmpm">AM</span></span>
+      <span class="header-clock-sep"></span>
+      <span class="header-clock-date" id="headerClockDate">--- --</span>
+    </div>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="portafolio.html">Portafolio</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+      <li><a href="privacidad.html">Privacidad</a></li>
+    </ul>
+  </nav>
+</header>
+
+<button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+
+<nav class="mobile-nav-overlay" id="mobileNavOverlay">
+  <ul>
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="portafolio.html">Portafolio</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+    <li><a href="privacidad.html">Privacidad</a></li>
+  </ul>
+</nav>
+
+<main class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">
+      <span class="tw-ghost" data-edit-key="hero.title" aria-hidden="true">CrashTech</span>
+      <span class="tw-live"><span id="typewriter"></span><span class="tw-cursor">|</span></span>
+    </h1>
+    <img src="img/crash-hero.png" alt="CrashTech" class="hero-shield-img">
+    <p class="hero-sub" data-edit-key="hero.slogan">Diseño creativo. Código funcional. Responsabilidad.</p>
+    <div class="availability-badge" id="availabilityBadge">
+      <span class="dot"></span>
+      <span id="availabilityText">Disponible para nuevos proyectos</span>
+    </div>
+  </div>
+</main>
+
+<section class="stack-section">
+  <div class="section-head reveal">
+    <span class="eyebrow">Stack</span>
+    <h2>Con qué construyo</h2>
+    <p>Las herramientas que uso día a día para llevar un proyecto de la idea al despliegue.</p>
+  </div>
+  <div class="stack-grid reveal">
+    <span class="stack-chip">Node.js</span>
+    <span class="stack-chip">PHP</span>
+    <span class="stack-chip">MySQL</span>
+    <span class="stack-chip">Supabase</span>
+    <span class="stack-chip">JavaScript</span>
+    <span class="stack-chip">HTML5</span>
+    <span class="stack-chip">CSS3</span>
+    <span class="stack-chip">Vercel</span>
+    <span class="stack-chip">n8n</span>
+    <span class="stack-chip">Gemini API</span>
+  </div>
+</section>
+
+<footer>
+  <span data-edit-key="footer.copy">© 2026 CrashTech</span>
+  <div class="footer-social">
+    <a href="#" class="social-link is-empty" data-social-href-key="footer.github" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" class="social-link is-empty" data-social-href-key="footer.linkedin" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
+  <span data-edit-key="footer.ubicacion">Hecho en La Paz, Bolivia</span>
+</footer>
+
+<script src="scripts/page-transition.js"></script>
+<script src="scripts/admin.js"></script>
+<script src="scripts/main.js"></script>
+<script src="scripts/inicio.js"></script>
+<script src="scripts/space-bg.js"></script>
+<script src="scripts/header-clock.js"></script>
+</body>
+</html>

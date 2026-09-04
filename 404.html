@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Página no encontrada | CrashTech</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png">
+
+<!-- Esta página no debe indexarse -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Esta página no existe — volvé al inicio de CrashTech.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/404.css">
+</head>
+<body>
+
+<canvas id="spaceCanvas" class="space-canvas"></canvas>
+
+<main class="error-page">
+  <div class="error-inner reveal">
+    <img src="img/crash-hero.png" alt="CrashTech a la deriva" class="error-shield-img">
+    <span class="error-code">404</span>
+    <h1>Te saliste de la órbita</h1>
+    <p>Esta página no existe, se movió, o quedó flotando en algún lugar del espacio. El panda ya salió a buscarla.</p>
+    <span class="error-status" id="errorStatus">Buscando el camino de regreso...</span>
+  </div>
+</main>
+
+<script src="scripts/space-bg.js"></script>
+<script>
+  // Redirección automática: en cuanto detectamos que hay conexión de
+  // verdad (no solo navigator.onLine, que puede mentir), volvemos solos
+  // al Inicio — sin necesidad de que la persona haga clic en nada.
+  (() => {
+    const statusEl = document.getElementById('errorStatus');
+    let checking = false;
+
+    async function tryReconnect() {
+      if (checking) return;
+      checking = true;
+      try {
+        // pedido liviano y sin caché: si responde, hay conexión real
+        await fetch('index.html', { method: 'HEAD', cache: 'no-store' });
+        if (statusEl) statusEl.textContent = 'Conexión recuperada — volviendo...';
+        window.location.replace('index.html');
+      } catch (e) {
+        checking = false; // seguimos esperando, no hay conexión todavía
+      }
+    }
+
+    // Reintenta cada pocos segundos, y también apenas el navegador
+    // detecta que la conexión volvió.
+    setInterval(tryReconnect, 4000);
+    window.addEventListener('online', tryReconnect);
+
+    // Primer intento con una pequeña espera, para no redirigir de golpe
+    // antes de que la persona alcance a leer el mensaje.
+    setTimeout(tryReconnect, 4000);
+  })();
+</script>
+</body>
+</html>

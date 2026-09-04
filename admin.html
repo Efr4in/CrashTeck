@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CrashTech — Panel de administrador</title>
+<script>
+  // Acceso solo a través del login del sitio público (clic en el escudo).
+  // Cualquier visita directa sin sesión válida se trata como un intruso: 404, no un login.
+  if (sessionStorage.getItem('crashAdminLoggedIn') !== '1') {
+    window.location.replace('404.html');
+  }
+</script>
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/admin-dashboard.css">
+</head>
+<body class="admin-body">
+
+<!-- Dashboard -->
+<div class="admin-shell show" id="adminShell">
+  <div class="admin-topbar">
+    <div class="brand">
+      <div class="brand-badge"><img src="img/crash-logo.png" alt="CrashTech"></div>
+      Panel de administrador
+    </div>
+    <div class="admin-topbar-actions">
+      <a href="index.html">Ver sitio</a>
+      <button type="button" id="dashLogout">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="admin-body-area">
+    <div class="admin-tabs">
+      <button type="button" class="active" data-tab="resumen"><span class="tab-icon">📊</span> Resumen</button>
+      <button type="button" data-tab="inicio"><span class="tab-icon">🏠</span> Inicio</button>
+      <button type="button" data-tab="portafolio"><span class="tab-icon">🗂</span> Portafolio</button>
+      <button type="button" data-tab="contacto"><span class="tab-icon">✉️</span> Contacto</button>
+      <button type="button" data-tab="privacidad"><span class="tab-icon">🛡</span> Privacidad</button>
+    </div>
+
+    <div class="admin-panel-wrap">
+      <img src="img/crash-hero.png" alt="" class="admin-watermark">
+
+      <div class="admin-panel">
+
+                <!-- ===== RESUMEN ===== -->
+        <div class="admin-panel-view active" id="view-resumen">
+          <h2>Resumen general</h2>
+          <p class="hint">Un vistazo real a cómo está tu sitio ahora mismo — nada inventado, todo calculado de lo que ya cargaste.</p>
+
+          <div class="stat-grid">
+            <div class="stat-card">
+              <span class="stat-label">Proyectos publicados</span>
+              <span class="stat-value" id="statProjects">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Etiquetas distintas</span>
+              <span class="stat-value" id="statTags">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Contacto configurado</span>
+              <span class="stat-value" id="statContact">No</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Textos personalizados</span>
+              <span class="stat-value" id="statTexts">0 / 0</span>
+            </div>
+          </div>
+
+          <div class="overview-row">
+            <div class="overview-panel overview-ring-panel">
+              <h3>Estado general del sitio</h3>
+              <canvas id="completionRing" width="160" height="160"></canvas>
+              <span class="ring-caption" id="ringCaption">0% listo</span>
+            </div>
+
+            <div class="overview-panel">
+              <h3>Etiquetas más usadas</h3>
+              <div id="tagBars" class="tag-bars"></div>
+            </div>
+          </div>
+
+          <div class="overview-panel" style="margin-top:24px;">
+            <h3>Últimos proyectos agregados</h3>
+            <div class="admin-project-list" id="recentProjectsList"></div>
+          </div>
+
+          <div class="overview-panel" style="margin-top:24px;">
+            <h3>Estado por página</h3>
+            <div id="pageStatusList" class="page-status-list"></div>
+          </div>
+        </div>
+
+        <!-- ===== INICIO ===== -->
+        <div class="admin-panel-view" id="view-inicio">
+          <h2>Página: Inicio</h2>
+          <p class="hint">Título, eslogan y el pie de página que se repite en las 4 páginas.</p>
+          <div id="fields-inicio"></div>
+          <div class="admin-save-row">
+            <button type="button" class="btn btn-primary save-texts-btn">Guardar cambios</button>
+            <button type="button" class="btn btn-ghost reset-texts-btn">Restablecer esta página</button>
+            <span class="admin-save-msg">Guardado ✓</span>
+          </div>
+        </div>
+
+        <!-- ===== PORTAFOLIO ===== -->
+        <div class="admin-panel-view" id="view-portafolio">
+          <h2>Página: Portafolio</h2>
+          <p class="hint">Textos de la página y los proyectos publicados.</p>
+          <div id="fields-portafolio"></div>
+          <div class="admin-save-row">
+            <button type="button" class="btn btn-primary save-texts-btn">Guardar textos</button>
+            <button type="button" class="btn btn-ghost reset-texts-btn">Restablecer esta página</button>
+            <span class="admin-save-msg">Guardado ✓</span>
+          </div>
+
+          <h3 style="margin-top:36px;font-size:0.95rem;">Proyectos publicados</h3>
+          <div class="admin-project-list" id="projectList"></div>
+          <button type="button" class="btn btn-primary" id="addProjectBtn">+ Agregar proyecto</button>
+
+          <div class="admin-editor" id="projectEditor">
+            <h3 id="editorTitle">Nuevo proyecto</h3>
+
+            <div class="admin-field">
+              <label for="projTitle">Título</label>
+              <input type="text" id="projTitle" placeholder="Nombre del proyecto">
+            </div>
+
+            <div class="admin-field">
+              <label for="projDesc">Descripción</label>
+              <textarea id="projDesc" rows="4" placeholder="Qué hace el sistema, para quién, con qué lo construiste..."></textarea>
+            </div>
+
+            <div class="admin-field">
+              <label for="projTagInput">Etiquetas</label>
+              <div class="admin-tag-input" id="tagInputWrap">
+                <input type="text" id="projTagInput" placeholder="Escribe una etiqueta y presiona Enter">
+              </div>
+            </div>
+
+            <div class="admin-field">
+              <label for="projMediaType">Vista previa</label>
+              <select id="projMediaType">
+                <option value="none">Sin vista previa</option>
+                <option value="image">Imagen</option>
+                <option value="gif">GIF</option>
+                <option value="video">Video (URL)</option>
+              </select>
+            </div>
+
+            <div class="admin-field" id="mediaFileField">
+              <label for="projMediaFile">Archivo (imagen o GIF)</label>
+              <div class="admin-file-input">
+                <input type="file" id="projMediaFile" accept="image/*">
+                <label for="projMediaFile" class="admin-file-btn">Seleccionar archivo</label>
+                <span class="admin-file-name" id="projMediaFileName">Sin archivo seleccionado</span>
+              </div>
+              <div class="admin-media-warning">Recomendado: menos de 800 KB — se guarda en este navegador.</div>
+            </div>
+
+            <div class="admin-field" id="mediaUrlField" style="display:none;">
+              <label for="projMediaUrl">URL del video (mp4 recomendado)</label>
+              <input type="text" id="projMediaUrl" placeholder="https://.../video.mp4">
+              <div class="admin-media-warning">Sube el video a un hosting (Vercel, tu propio servidor, etc.) y pega el link aquí — los archivos de video son demasiado pesados para guardarlos en el navegador.</div>
+            </div>
+
+            <div class="admin-media-preview" id="mediaPreview">Sin vista previa</div>
+
+            <div class="admin-editor-actions">
+              <button type="button" class="btn btn-primary" id="saveProjectBtn">Guardar proyecto</button>
+              <button type="button" class="btn btn-ghost" id="cancelProjectBtn">Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CONTACTO ===== -->
+        <div class="admin-panel-view" id="view-contacto">
+          <h2>Página: Contacto</h2>
+          <p class="hint">Textos de la página y los datos reales que usan los botones de WhatsApp y Correo.</p>
+          <div id="fields-contacto"></div>
+
+          <div class="admin-field-group">
+            <h3>Datos de contacto (usados en los botones)</h3>
+            <div class="admin-field">
+              <label for="field-contacto-numero">Número de WhatsApp (formato internacional, sin "+", ej. 59171234567)</label>
+              <div style="display:flex;gap:10px;">
+                <input type="text" id="field-contacto-numero" placeholder="59171234567" style="flex:1;">
+                <button type="button" class="btn btn-ghost" id="testWhatsapp">Probar</button>
+              </div>
+            </div>
+            <div class="admin-field">
+              <label for="field-contacto-email">Correo de destino</label>
+              <div style="display:flex;gap:10px;">
+                <input type="text" id="field-contacto-email" placeholder="tucorreo@ejemplo.com" style="flex:1;">
+                <button type="button" class="btn btn-ghost" id="testEmail">Probar</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-save-row">
+            <button type="button" class="btn btn-primary save-texts-btn">Guardar cambios</button>
+            <button type="button" class="btn btn-ghost reset-texts-btn">Restablecer esta página</button>
+            <span class="admin-save-msg">Guardado ✓</span>
+          </div>
+        </div>
+
+        <!-- ===== PRIVACIDAD ===== -->
+        <div class="admin-panel-view" id="view-privacidad">
+          <h2>Página: Privacidad</h2>
+          <p class="hint">Los 3 puntos de tu política de trabajo.</p>
+          <div id="fields-privacidad"></div>
+          <div class="admin-save-row">
+            <button type="button" class="btn btn-primary save-texts-btn">Guardar cambios</button>
+            <button type="button" class="btn btn-ghost reset-texts-btn">Restablecer esta página</button>
+            <span class="admin-save-msg">Guardado ✓</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="scripts/admin-dashboard.js"></script>
+</body>
+</html>

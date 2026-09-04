@@ -1,0 +1,62 @@
+/* ============================================
+   404 — Página no encontrada
+   ============================================ */
+
+main.error-page{
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;
+  min-height:100vh;
+}
+
+.error-inner{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  max-width:520px;
+  animation:error-fade-in 1s ease forwards;
+}
+@keyframes error-fade-in{
+  from{opacity:0;transform:translateY(20px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.error-shield-img{
+  width:clamp(140px, 16vw, 190px);
+  height:auto;
+  opacity:0.9;
+  filter:drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+  animation:error-float 5s ease-in-out infinite;
+  margin-bottom:6px;
+}
+@keyframes error-float{
+  0%,100%{transform:translateY(0) rotate(-1.5deg);}
+  50%{transform:translateY(-14px) rotate(1.5deg);}
+}
+
+.error-code{
+  font-family:'Fraunces',serif;
+  font-size:clamp(3.2rem, 9vw, 5rem);
+  font-weight:600;
+  color:var(--gold);
+  letter-spacing:0.02em;
+  line-height:1;
+}
+
+.error-inner h1{
+  font-size:clamp(1.5rem, 3vw, 2rem);
+  color:var(--cream);
+  margin-top:4px;
+}
+
+.error-inner p{
+  color:var(--text-muted);
+  font-size:0.95rem;
+  line-height:1.7;
+  margin-bottom:10px;
+}
+
+.error-status{
+  font-size:0.76rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--gold-soft);
+  opacity:0.8;
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacidad y Términos — CrashTech</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="img/favicon-180.png">
+
+<!-- SEO -->
+<meta name="description" content="Cómo trabajo: todo por contrato, ajustes menores incluidos sin costo, transparencia total en cada proyecto.">
+
+<!-- Open Graph (vista previa al compartir el link) -->
+<meta property="og:title" content="Privacidad y Términos — CrashTech">
+<meta property="og:description" content="Cómo trabajo: todo por contrato, ajustes menores incluidos sin costo, transparencia total en cada proyecto.">
+<meta property="og:image" content="img/og-preview.jpg">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_BO">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Privacidad y Términos — CrashTech">
+<meta name="twitter:description" content="Cómo trabajo: todo por contrato, ajustes menores incluidos sin costo, transparencia total en cada proyecto.">
+<meta name="twitter:image" content="img/og-preview.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/privacidad.css">
+<script>
+  if (sessionStorage.getItem('crashtechLoaded')) {
+    document.documentElement.classList.add('no-loader');
+  }
+</script>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-ring-wrap">
+    <svg class="loader-ring" viewBox="0 0 120 120">
+      <circle class="loader-ring-bg" cx="60" cy="60" r="52"></circle>
+      <circle class="loader-ring-fg" cx="60" cy="60" r="52"></circle>
+    </svg>
+    <div class="loader-badge"><img src="img/crash-circle.png" alt="CrashTech"></div>
+  </div>
+</div>
+
+<canvas id="spaceCanvas" class="space-canvas"></canvas>
+
+<header>
+  <div class="brand">
+    <div class="brand-badge"><img src="img/crash-logo.png" alt="CrashTech"></div>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="index.html">Inicio</a></li>
+      <li><a href="portafolio.html">Portafolio</a></li>
+      <li><a href="contacto.html">Contacto</a></li>
+      <li><a href="privacidad.html">Privacidad</a></li>
+    </ul>
+  </nav>
+</header>
+
+<button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false">
+  <span></span><span></span><span></span>
+</button>
+
+<nav class="mobile-nav-overlay" id="mobileNavOverlay">
+  <ul>
+    <li><a href="index.html">Inicio</a></li>
+    <li><a href="portafolio.html">Portafolio</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+    <li><a href="privacidad.html">Privacidad</a></li>
+  </ul>
+</nav>
+
+<main class="privacidad">
+  <div class="section-head reveal">
+    <span class="eyebrow" data-edit-key="privacidad.eyebrow">Privacidad &amp; Términos</span>
+    <h2 data-edit-key="privacidad.titulo">Cómo trabajo</h2>
+  </div>
+  <div class="policy reveal">
+    <div class="item">
+      <span class="num">01</span>
+      <h3 data-edit-key="privacidad.item1.titulo">Todo por contrato</h3>
+      <p data-edit-key="privacidad.item1.descripcion">Cada proyecto se formaliza con un contrato claro antes de empezar: alcance, tiempos y entregables definidos desde el inicio.</p>
+    </div>
+    <div class="item">
+      <span class="num">02</span>
+      <h3 data-edit-key="privacidad.item2.titulo">Ajustes menores, sin costo</h3>
+      <p data-edit-key="privacidad.item2.descripcion">Pequeños ajustes o correcciones sobre lo entregado están incluidos, sin cargos adicionales ni letra chica.</p>
+    </div>
+    <div class="item">
+      <span class="num">03</span>
+      <h3 data-edit-key="privacidad.item3.titulo">Cambios mayores, aparte</h3>
+      <p data-edit-key="privacidad.item3.descripcion">Si se pide algo fuera del alcance original —nuevas funciones o un cambio de fondo— se cotiza como trabajo adicional, de forma transparente.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span data-edit-key="footer.copy">© 2026 CrashTech</span>
+  <div class="footer-social">
+    <a href="#" class="social-link is-empty" data-social-href-key="footer.github" target="_blank" rel="noopener">GitHub</a>
+    <a href="#" class="social-link is-empty" data-social-href-key="footer.linkedin" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
+  <span data-edit-key="footer.ubicacion">Hecho en La Paz, Bolivia</span>
+</footer>
+
+<script src="scripts/page-transition.js"></script>
+<script src="scripts/admin.js"></script>
+<script src="scripts/main.js"></script>
+<script src="scripts/space-bg.js"></script>
+</body>
+</html>
