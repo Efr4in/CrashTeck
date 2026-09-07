@@ -2,14 +2,15 @@
 // DASHBOARD DE ADMINISTRADOR (/admin.html)
 // ============================================
 // El login ya no vive aquí — solo se entra a través del modal del sitio
-// público (scripts/admin.js), que es quien valida usuario/contraseña y
-// redirige aquí tras autenticar. Esta página solo verifica que exista
-// una sesión válida (ver initSecurityGuard más abajo) y, si no la hay,
-// trata la visita como un intruso y la manda a 404.html.
-
-const CONTENT_STORAGE_KEY = 'crashtechContent';
-const PROJECTS_STORAGE_KEY = 'crashtechProjects';
-const SESSION_FLAG = 'crashAdminLoggedIn';
+// público (scripts/admin.js), que valida contra Supabase Auth y redirige
+// aquí tras autenticar. Esta página solo verifica que exista una sesión
+// real de Supabase y, si no la hay, trata la visita como un intruso y
+// la manda a 404.html.
+//
+// Todos los datos (textos, proyectos, imágenes) viven en Supabase — el
+// dashboard los lee una vez al cargar, los guarda en una caché local en
+// memoria (para no repreguntar a la base a cada tecla), y cada "Guardar"
+// escribe de verdad en la base de datos real.
 
 // ---------- Config de todos los textos editables del sitio, por página ----------
 const TEXT_FIELDS = {
@@ -50,17 +51,12 @@ const TEXT_FIELDS = {
   ]
 };
 
-// Datos reales de contacto (número de WhatsApp y correo), independientes de los textos
 const CONTACT_INFO_KEYS = { numero: 'contacto.info.numero', email: 'contacto.info.email' };
 
-function getSavedContent() {
-  try { return JSON.parse(localStorage.getItem(CONTENT_STORAGE_KEY) || '{}'); }
-  catch (e) { return {}; }
-}
-function getSavedProjects() {
-  try { return JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY) || '[]'); }
-  catch (e) { return []; }
-}
+// ---------- Caché local en memoria (se llena una vez al cargar el dashboard) ----------
+let contentCache = {};
+let projectsCache = [];
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str || '';
@@ -70,38 +66,42 @@ function escapeAttr(str) {
   return (str || '').replace(/"/g, '&quot;');
 }
 
-// ================= LOGIN =================
-function initSecurityGuard() {
-  // El head ya redirige a 404.html si no hay sesión válida — esto es un respaldo
-  // por si ese script no llegó a correr por alguna razón.
-  if (sessionStorage.getItem(SESSION_FLAG) !== '1') {
+// ================= SEGURIDAD =================
+async function initSecurityGuard() {
+  const session = await sbGetSession();
+  if (!session) {
     window.location.replace('404.html');
     return;
   }
-  initDashboard();
+  document.getElementById('adminShell').classList.add('show');
+  await initDashboard();
 }
 
 // ================= DASHBOARD =================
-function initDashboard() {
+async function initDashboard() {
+  contentCache = await sbGetContent();
+  projectsCache = await sbGetProjects();
+
   initTabs();
   Object.keys(TEXT_FIELDS).forEach(renderTextFieldsFor);
   initSaveButtons();
   initContactInfo();
+  initStackEditor();
   initProjectsPanel();
   renderOverview();
 
-  document.getElementById('dashLogout').addEventListener('click', () => {
-    sessionStorage.removeItem(SESSION_FLAG);
+  document.getElementById('dashLogout').addEventListener('click', async () => {
+    await sbSignOut();
     window.location.href = 'index.html';
   });
 }
 
 function initTabs() {
   const buttons = document.querySelectorAll('.admin-tabs button');
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.toggle('active', b === btn));
-      document.querySelectorAll('.admin-panel-view').forEach(v => {
+      buttons.forEach((b) => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.admin-panel-view').forEach((v) => {
         v.classList.toggle('active', v.id === 'view-' + btn.dataset.tab);
       });
     });
@@ -112,17 +112,16 @@ function initTabs() {
 function renderTextFieldsFor(pageKey) {
   const container = document.getElementById('fields-' + pageKey);
   if (!container) return;
-  const saved = getSavedContent();
   const fields = TEXT_FIELDS[pageKey];
 
   container.innerHTML = `
     <div class="admin-field-group">
-      ${fields.map(f => {
-        const current = saved[f.key] !== undefined ? saved[f.key] : f.default;
+      ${fields.map((f) => {
+        const current = contentCache[f.key] !== undefined ? contentCache[f.key] : f.default;
         let control;
         if (f.type === 'select') {
           control = `<select id="field-${f.key}" data-key="${f.key}">
-            ${f.options.map(opt => `<option value="${escapeAttr(opt.value)}" ${opt.value === current ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
+            ${f.options.map((opt) => `<option value="${escapeAttr(opt.value)}" ${opt.value === current ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
           </select>`;
         } else if (f.multiline) {
           control = `<textarea id="field-${f.key}" rows="3" data-key="${f.key}">${escapeHtml(current)}</textarea>`;
@@ -141,30 +140,47 @@ function renderTextFieldsFor(pageKey) {
 }
 
 function initSaveButtons() {
-  document.querySelectorAll('.admin-panel-view').forEach(view => {
+  document.querySelectorAll('.admin-panel-view').forEach((view) => {
     const pageKey = view.id.replace('view-', '');
     const saveBtn = view.querySelector('.save-texts-btn');
     const resetBtn = view.querySelector('.reset-texts-btn');
     const msg = view.querySelector('.admin-save-msg');
 
     if (saveBtn) {
-      saveBtn.addEventListener('click', () => {
-        const current = getSavedContent();
-        view.querySelectorAll('[data-key]').forEach(el => {
-          current[el.dataset.key] = el.value;
+      saveBtn.addEventListener('click', async () => {
+        saveBtn.disabled = true;
+        const updates = {};
+        view.querySelectorAll('[data-key]').forEach((el) => {
+          updates[el.dataset.key] = el.value;
+          contentCache[el.dataset.key] = el.value;
         });
-        localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(current));
-        msg.classList.add('show');
-        renderOverview();
-        setTimeout(() => msg.classList.remove('show'), 1800);
+        if (pageKey === 'inicio') {
+          const stackJson = JSON.stringify(currentStackTags);
+          updates['stack.items'] = stackJson;
+          contentCache['stack.items'] = stackJson;
+        }
+        const ok = await sbSaveContent(updates);
+        saveBtn.disabled = false;
+        if (ok) {
+          msg.textContent = 'Guardado ✓';
+          msg.classList.add('show');
+          setTimeout(() => msg.classList.remove('show'), 1800);
+          renderOverview();
+        } else {
+          msg.textContent = 'Error al guardar — revisá tu conexión.';
+          msg.classList.add('show');
+        }
       });
     }
     if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
+      resetBtn.addEventListener('click', async () => {
         if (!confirm('¿Restablecer los textos de esta página a su versión original?')) return;
-        const current = getSavedContent();
-        (TEXT_FIELDS[pageKey] || []).forEach(f => delete current[f.key]);
-        localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(current));
+        const updates = {};
+        (TEXT_FIELDS[pageKey] || []).forEach((f) => {
+          updates[f.key] = f.default;
+          contentCache[f.key] = f.default;
+        });
+        await sbSaveContent(updates);
         renderTextFieldsFor(pageKey);
       });
     }
@@ -172,12 +188,51 @@ function initSaveButtons() {
 }
 
 // ---------- Datos reales de contacto ----------
-function initContactInfo() {
-  const saved = getSavedContent();
-  document.getElementById('field-contacto-numero').value = saved[CONTACT_INFO_KEYS.numero] || '';
-  document.getElementById('field-contacto-email').value = saved[CONTACT_INFO_KEYS.email] || '';
+// ---------- Stack — tecnologías (chips) ----------
+let currentStackTags = [];
 
-  // Se guardan junto con el resto de los textos de Contacto (mismo botón "Guardar cambios")
+function initStackEditor() {
+  try {
+    currentStackTags = JSON.parse(contentCache['stack.items'] || '[]');
+  } catch (e) {
+    currentStackTags = [];
+  }
+  renderStackTags();
+
+  const input = document.getElementById('stackTagInput');
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      e.preventDefault();
+      addStackTag(input.value.trim());
+      input.value = '';
+    }
+  });
+}
+
+function renderStackTags() {
+  const wrap = document.getElementById('stackTagInputWrap');
+  const input = document.getElementById('stackTagInput');
+  wrap.querySelectorAll('.admin-tag-chip').forEach((el) => el.remove());
+  currentStackTags.forEach((tag, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'admin-tag-chip';
+    chip.innerHTML = `${escapeHtml(tag)} <button type="button" data-i="${i}">✕</button>`;
+    chip.querySelector('button').addEventListener('click', () => {
+      currentStackTags.splice(i, 1);
+      renderStackTags();
+    });
+    wrap.insertBefore(chip, input);
+  });
+}
+function addStackTag(tag) {
+  if (currentStackTags.includes(tag)) return;
+  currentStackTags.push(tag);
+  renderStackTags();
+}
+
+function initContactInfo() {
+  document.getElementById('field-contacto-numero').value = contentCache[CONTACT_INFO_KEYS.numero] || '';
+  document.getElementById('field-contacto-email').value = contentCache[CONTACT_INFO_KEYS.email] || '';
   document.getElementById('field-contacto-numero').dataset.key = CONTACT_INFO_KEYS.numero;
   document.getElementById('field-contacto-email').dataset.key = CONTACT_INFO_KEYS.email;
 
@@ -196,7 +251,8 @@ function initContactInfo() {
 // ---------- Panel de portafolio ----------
 let editingProjectId = null;
 let currentTags = [];
-let pendingMediaData = null;
+let pendingMediaUrl = null;
+let uploadingMedia = false;
 
 function initProjectsPanel() {
   renderProjectList();
@@ -221,14 +277,11 @@ function initProjectsPanel() {
 
 function renderProjectList() {
   const list = document.getElementById('projectList');
-  const projects = getSavedProjects();
-
-  if (projects.length === 0) {
+  if (projectsCache.length === 0) {
     list.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">Aún no agregaste ningún proyecto.</p>`;
     return;
   }
-
-  list.innerHTML = projects.map(p => `
+  list.innerHTML = projectsCache.map((p) => `
     <div class="admin-project-item">
       <div class="thumb">${thumbHtml(p)}</div>
       <div class="info">
@@ -242,30 +295,36 @@ function renderProjectList() {
     </div>
   `).join('');
 
-  list.querySelectorAll('[data-edit]').forEach(btn => {
+  list.querySelectorAll('[data-edit]').forEach((btn) => {
     btn.addEventListener('click', () => openEditor(btn.dataset.edit));
   });
-  list.querySelectorAll('[data-delete]').forEach(btn => {
+  list.querySelectorAll('[data-delete]').forEach((btn) => {
     btn.addEventListener('click', () => deleteProject(btn.dataset.delete));
   });
 }
 
 function thumbHtml(p) {
-  if ((p.mediaType === 'image' || p.mediaType === 'gif') && p.mediaData) {
-    return `<img src="${p.mediaData}" alt="">`;
+  if ((p.media_type === 'image' || p.media_type === 'gif') && p.media_url) {
+    return `<img src="${p.media_url}" alt="">`;
   }
-  if (p.mediaType === 'video' && p.mediaData) {
-    return `<video src="${p.mediaData}" muted></video>`;
+  if (p.media_type === 'video' && p.media_url) {
+    const embed = sbDriveEmbedUrl(p.media_url);
+    if (embed) return `<iframe src="${embed}" style="border:0;"></iframe>`;
+    return `<video src="${p.media_url}" muted></video>`;
   }
   return 'Sin imagen';
 }
 
-function deleteProject(id) {
+async function deleteProject(id) {
   if (!confirm('¿Eliminar este proyecto del portafolio?')) return;
-  const projects = getSavedProjects().filter(p => p.id !== id);
-  localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
-  renderProjectList();
-  renderOverview();
+  const ok = await sbDeleteProject(id);
+  if (ok) {
+    projectsCache = projectsCache.filter((p) => p.id !== id);
+    renderProjectList();
+    renderOverview();
+  } else {
+    alert('No se pudo eliminar — revisá tu conexión.');
+  }
 }
 
 function openEditor(id) {
@@ -274,14 +333,14 @@ function openEditor(id) {
   const title = document.getElementById('editorTitle');
 
   if (id) {
-    const p = getSavedProjects().find(x => x.id === id);
+    const p = projectsCache.find((x) => x.id === id);
     title.textContent = 'Editar proyecto';
     document.getElementById('projTitle').value = p.title || '';
     document.getElementById('projDesc').value = p.description || '';
     currentTags = [...(p.tags || [])];
-    document.getElementById('projMediaType').value = p.mediaType || 'none';
-    document.getElementById('projMediaUrl').value = p.mediaType === 'video' ? (p.mediaData || '') : '';
-    pendingMediaData = (p.mediaType === 'image' || p.mediaType === 'gif') ? (p.mediaData || null) : null;
+    document.getElementById('projMediaType').value = p.media_type || 'none';
+    document.getElementById('projMediaUrl').value = p.media_type === 'video' ? (p.media_url || '') : '';
+    pendingMediaUrl = (p.media_type === 'image' || p.media_type === 'gif') ? (p.media_url || null) : null;
   } else {
     title.textContent = 'Nuevo proyecto';
     document.getElementById('projTitle').value = '';
@@ -289,7 +348,7 @@ function openEditor(id) {
     currentTags = [];
     document.getElementById('projMediaType').value = 'none';
     document.getElementById('projMediaUrl').value = '';
-    pendingMediaData = null;
+    pendingMediaUrl = null;
   }
 
   document.getElementById('projMediaFile').value = '';
@@ -309,7 +368,7 @@ function closeEditor() {
 function renderTags() {
   const wrap = document.getElementById('tagInputWrap');
   const input = document.getElementById('projTagInput');
-  wrap.querySelectorAll('.admin-tag-chip').forEach(el => el.remove());
+  wrap.querySelectorAll('.admin-tag-chip').forEach((el) => el.remove());
   currentTags.forEach((tag, i) => {
     const chip = document.createElement('span');
     chip.className = 'admin-tag-chip';
@@ -334,48 +393,61 @@ function updateMediaFieldVisibility() {
   updateMediaPreview();
 }
 
-function handleFileSelect(evt) {
+async function handleFileSelect(evt) {
   const file = evt.target.files[0];
   if (!file) return;
 
-  document.getElementById('projMediaFileName').textContent = file.name;
-
+  document.getElementById('projMediaFileName').textContent = `Subiendo "${file.name}"...`;
   const warningEl = document.querySelector('#mediaFileField .admin-media-warning');
   if (file.size > 800 * 1024) {
-    warningEl.textContent = `Este archivo pesa ${(file.size / 1024).toFixed(0)} KB — puede hacer que el guardado local falle o vaya lento. Considera comprimirlo.`;
+    warningEl.textContent = `Este archivo pesa ${(file.size / 1024).toFixed(0)} KB — puede tardar más en subir. Considera comprimirlo.`;
   } else {
-    warningEl.textContent = 'Recomendado: menos de 800 KB — se guarda en este navegador.';
+    warningEl.textContent = 'Recomendado: menos de 800 KB.';
   }
 
-  const reader = new FileReader();
-  reader.onload = () => {
-    pendingMediaData = reader.result;
+  uploadingMedia = true;
+  const url = await sbUploadMedia(file);
+  uploadingMedia = false;
+
+  if (url) {
+    pendingMediaUrl = url;
+    document.getElementById('projMediaFileName').textContent = file.name;
     updateMediaPreview();
-  };
-  reader.readAsDataURL(file);
+  } else {
+    document.getElementById('projMediaFileName').textContent = 'Error al subir — probá de nuevo.';
+  }
 }
 
 function updateMediaPreviewFromUrl() {
-  pendingMediaData = document.getElementById('projMediaUrl').value.trim();
-  updateMediaPreview();
+  const raw = document.getElementById('projMediaUrl').value.trim();
+  const embed = sbDriveEmbedUrl(raw);
+  pendingMediaUrl = raw;
+  updateMediaPreview(embed);
 }
 
-function updateMediaPreview() {
+function updateMediaPreview(driveEmbed) {
   const type = document.getElementById('projMediaType').value;
   const preview = document.getElementById('mediaPreview');
 
-  if (type === 'none' || !pendingMediaData) {
+  if (type === 'none' || !pendingMediaUrl) {
     preview.innerHTML = 'Sin vista previa';
     return;
   }
   if (type === 'image' || type === 'gif') {
-    preview.innerHTML = `<img src="${pendingMediaData}" alt="">`;
+    preview.innerHTML = `<img src="${pendingMediaUrl}" alt="">`;
   } else if (type === 'video') {
-    preview.innerHTML = `<video src="${pendingMediaData}" muted controls></video>`;
+    const embed = driveEmbed !== undefined ? driveEmbed : sbDriveEmbedUrl(pendingMediaUrl);
+    preview.innerHTML = embed
+      ? `<iframe src="${embed}" style="border:0;"></iframe>`
+      : `<video src="${pendingMediaUrl}" muted controls></video>`;
   }
 }
 
-function saveProject() {
+async function saveProject() {
+  if (uploadingMedia) {
+    alert('Esperá a que termine de subir el archivo.');
+    return;
+  }
   const title = document.getElementById('projTitle').value.trim();
   if (!title) {
     alert('Ponle un título al proyecto antes de guardar.');
@@ -383,29 +455,30 @@ function saveProject() {
   }
 
   const mediaType = document.getElementById('projMediaType').value;
-  const mediaData = mediaType === 'video'
+  const mediaUrl = mediaType === 'video'
     ? document.getElementById('projMediaUrl').value.trim()
-    : pendingMediaData;
+    : pendingMediaUrl;
 
-  const projects = getSavedProjects();
+  const saveBtn = document.getElementById('saveProjectBtn');
+  saveBtn.disabled = true;
 
-  const projectData = {
-    id: editingProjectId || ('proj_' + Date.now()),
+  const ok = await sbSaveProject({
+    id: editingProjectId || undefined,
     title,
     description: document.getElementById('projDesc').value.trim(),
     tags: [...currentTags],
-    mediaType,
-    mediaData: mediaType === 'none' ? null : mediaData
-  };
+    media_type: mediaType,
+    media_url: mediaType === 'none' ? null : mediaUrl
+  });
 
-  if (editingProjectId) {
-    const idx = projects.findIndex(p => p.id === editingProjectId);
-    if (idx !== -1) projects[idx] = projectData;
-  } else {
-    projects.push(projectData);
+  saveBtn.disabled = false;
+
+  if (!ok) {
+    alert('No se pudo guardar el proyecto — revisá tu conexión.');
+    return;
   }
 
-  localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects));
+  projectsCache = await sbGetProjects();
   renderProjectList();
   renderOverview();
   closeEditor();
@@ -413,39 +486,29 @@ function saveProject() {
 
 // ---------- Resumen (dashboard) ----------
 function renderOverview() {
-  const projects = getSavedProjects();
-  const content = getSavedContent();
+  document.getElementById('statProjects').textContent = projectsCache.length;
 
-  // Tarjetas
-  document.getElementById('statProjects').textContent = projects.length;
-
-  const allTags = projects.flatMap(p => p.tags || []);
+  const allTags = projectsCache.flatMap((p) => p.tags || []);
   const uniqueTags = [...new Set(allTags)];
   document.getElementById('statTags').textContent = uniqueTags.length;
 
-  const hasContact = !!(content[CONTACT_INFO_KEYS.numero] && content[CONTACT_INFO_KEYS.email]);
+  const hasContact = !!(contentCache[CONTACT_INFO_KEYS.numero] && contentCache[CONTACT_INFO_KEYS.email]);
   document.getElementById('statContact').textContent = hasContact ? 'Sí' : 'No';
 
   const allFields = Object.values(TEXT_FIELDS).flat();
-  const customizedCount = allFields.filter(f => content[f.key] !== undefined).length;
+  const customizedCount = allFields.filter((f) => contentCache[f.key] !== undefined && contentCache[f.key] !== f.default).length;
   document.getElementById('statTexts').textContent = `${customizedCount} / ${allFields.length}`;
 
-  // Anillo de completitud (proyectos + contacto + textos, ponderado)
-  const projectScore = Math.min(projects.length, 3) / 3 * 30;
+  const projectScore = Math.min(projectsCache.length, 3) / 3 * 30;
   const contactScore = hasContact ? 30 : 0;
   const textScore = allFields.length ? (customizedCount / allFields.length) * 40 : 0;
   const completion = Math.round(projectScore + contactScore + textScore);
   drawCompletionRing(completion);
   document.getElementById('ringCaption').textContent = `${completion}% listo`;
 
-  // Etiquetas más usadas
   renderTagBars(allTags);
-
-  // Últimos proyectos agregados
-  renderRecentProjects(projects);
-
-  // Estado por página
-  renderPageStatus(content);
+  renderRecentProjects();
+  renderPageStatus();
 }
 
 function drawCompletionRing(percent) {
@@ -483,7 +546,7 @@ function renderTagBars(allTags) {
     return;
   }
   const counts = {};
-  allTags.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+  allTags.forEach((t) => { counts[t] = (counts[t] || 0) + 1; });
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const max = sorted[0][1];
 
@@ -496,15 +559,15 @@ function renderTagBars(allTags) {
   `).join('');
 }
 
-function renderRecentProjects(projects) {
+function renderRecentProjects() {
   const list = document.getElementById('recentProjectsList');
   if (!list) return;
-  if (projects.length === 0) {
+  if (projectsCache.length === 0) {
     list.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem;">Todavía no agregaste proyectos.</p>`;
     return;
   }
-  const recent = [...projects].reverse().slice(0, 4);
-  list.innerHTML = recent.map(p => `
+  const recent = [...projectsCache].reverse().slice(0, 4);
+  list.innerHTML = recent.map((p) => `
     <div class="admin-project-item">
       <div class="thumb">${thumbHtml(p)}</div>
       <div class="info">
@@ -515,15 +578,15 @@ function renderRecentProjects(projects) {
   `).join('');
 }
 
-function renderPageStatus(content) {
+function renderPageStatus() {
   const wrap = document.getElementById('pageStatusList');
   if (!wrap) return;
   const icons = { inicio: '🏠', portafolio: '🗂', contacto: '✉️', privacidad: '🛡' };
   const labels = { inicio: 'Inicio', portafolio: 'Portafolio', contacto: 'Contacto', privacidad: 'Privacidad' };
 
-  wrap.innerHTML = Object.keys(TEXT_FIELDS).map(pageKey => {
+  wrap.innerHTML = Object.keys(TEXT_FIELDS).map((pageKey) => {
     const fields = TEXT_FIELDS[pageKey];
-    const done = fields.filter(f => content[f.key] !== undefined).length;
+    const done = fields.filter((f) => contentCache[f.key] !== undefined && contentCache[f.key] !== f.default).length;
     const pct = fields.length ? (done / fields.length) * 100 : 0;
     return `
       <div class="page-status-row">

@@ -102,17 +102,8 @@
     <h2>Con qué construyo</h2>
     <p>Las herramientas que uso día a día para llevar un proyecto de la idea al despliegue.</p>
   </div>
-  <div class="stack-grid reveal">
-    <span class="stack-chip">Node.js</span>
-    <span class="stack-chip">PHP</span>
-    <span class="stack-chip">MySQL</span>
-    <span class="stack-chip">Supabase</span>
-    <span class="stack-chip">JavaScript</span>
-    <span class="stack-chip">HTML5</span>
-    <span class="stack-chip">CSS3</span>
-    <span class="stack-chip">Vercel</span>
-    <span class="stack-chip">n8n</span>
-    <span class="stack-chip">Gemini API</span>
+  <div class="stack-grid reveal" id="stackGrid">
+    <!-- Se llena dinámicamente desde el panel de administrador -->
   </div>
 </section>
 
@@ -126,10 +117,13 @@
 </footer>
 
 <script src="scripts/page-transition.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="scripts/supabase-client.js"></script>
 <script src="scripts/admin.js"></script>
 <script src="scripts/main.js"></script>
 <script src="scripts/inicio.js"></script>
 <script src="scripts/space-bg.js"></script>
 <script src="scripts/header-clock.js"></script>
+<script src="scripts/stack-render.js"></script>
 </body>
 </html>

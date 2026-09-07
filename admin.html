@@ -4,13 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CrashTech — Panel de administrador</title>
-<script>
-  // Acceso solo a través del login del sitio público (clic en el escudo).
-  // Cualquier visita directa sin sesión válida se trata como un intruso: 404, no un login.
-  if (sessionStorage.getItem('crashAdminLoggedIn') !== '1') {
-    window.location.replace('404.html');
-  }
-</script>
 <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16.png">
 <meta name="robots" content="noindex, nofollow">
@@ -22,7 +15,7 @@
 <body class="admin-body">
 
 <!-- Dashboard -->
-<div class="admin-shell show" id="adminShell">
+<div class="admin-shell" id="adminShell">
   <div class="admin-topbar">
     <div class="brand">
       <div class="brand-badge"><img src="img/crash-logo.png" alt="CrashTech"></div>
@@ -99,8 +92,19 @@
         <!-- ===== INICIO ===== -->
         <div class="admin-panel-view" id="view-inicio">
           <h2>Página: Inicio</h2>
-          <p class="hint">Título, eslogan y el pie de página que se repite en las 4 páginas.</p>
+          <p class="hint">Título, eslogan, el pie de página que se repite en las 4 páginas, y las tecnologías de tu Stack.</p>
           <div id="fields-inicio"></div>
+
+          <div class="admin-field-group">
+            <h3>Stack — tecnologías (chips que aparecen en Inicio)</h3>
+            <div class="admin-field">
+              <label for="stackTagInput">Escribe una tecnología y presiona Enter</label>
+              <div class="admin-tag-input" id="stackTagInputWrap">
+                <input type="text" id="stackTagInput" placeholder="Ej: Node.js, Python, Docker...">
+              </div>
+            </div>
+          </div>
+
           <div class="admin-save-row">
             <button type="button" class="btn btn-primary save-texts-btn">Guardar cambios</button>
             <button type="button" class="btn btn-ghost reset-texts-btn">Restablecer esta página</button>
@@ -226,6 +230,8 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="scripts/supabase-client.js"></script>
 <script src="scripts/admin-dashboard.js"></script>
 </body>
 </html>

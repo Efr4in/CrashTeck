@@ -10,6 +10,10 @@
 //     menos una vez CON conexión antes (así el navegador alcanza a
 //     guardar los archivos). La primerísima visita de alguien sin
 //     conexión no puede mostrar nada — ninguna web puede evitar eso.
+//  3. Las tipografías (Fraunces/Manrope) vienen de Google Fonts, un
+//     servicio externo — sin conexión, el texto usa la fuente por
+//     defecto del sistema en vez de las tuyas. Es un detalle menor,
+//     el diseño y el fondo espacial animado sí se ven completos.
 
 const CACHE_NAME = 'crashtech-cache-v1';
 const OFFLINE_URL = '404.html';
@@ -42,13 +46,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Solo nos interesa interceptar navegación entre páginas (cargar/recargar
-  // una URL), no cada pedido de imagen o script suelto.
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() =>
-        caches.match(OFFLINE_URL).then((cached) => cached || Response.error())
-      )
-    );
-  }
+  // Estrategia: primero la copia guardada (si la tenemos, es instantánea y
+  // funciona sin conexión); si no está guardada, intentamos la red. Si
+  // estamos navegando a una página y ambas cosas fallan, mostramos la 404.
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+      return fetch(event.request).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match(OFFLINE_URL);
+        }
+        return Response.error();
+      });
+    })
+  );
 });

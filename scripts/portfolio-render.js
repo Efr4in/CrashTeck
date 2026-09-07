@@ -1,25 +1,19 @@
 // ============================================
-// Renderiza las tarjetas de Portafolio a partir de lo que el
-// administrador haya guardado desde el dashboard (/admin.html).
+// Renderiza las tarjetas de Portafolio a partir de los proyectos
+// guardados en la base de datos (tabla "projects" en Supabase).
 // Mientras no haya proyectos guardados, se muestra un estado vacío.
 // ============================================
 
-const PROJECTS_STORAGE_KEY = 'crashtechProjects';
-
-function loadProjects() {
-  try {
-    return JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY) || '[]');
-  } catch (e) {
-    return [];
-  }
-}
-
 function renderProjectMedia(p) {
-  if (p.mediaType === 'image' || p.mediaType === 'gif') {
-    if (p.mediaData) return `<img src="${p.mediaData}" alt="${escapeHtml(p.title)}" draggable="false">`;
+  if ((p.media_type === 'image' || p.media_type === 'gif') && p.media_url) {
+    return `<img src="${p.media_url}" alt="${escapeHtml(p.title)}" draggable="false">`;
   }
-  if (p.mediaType === 'video' && p.mediaData) {
-    return `<video src="${p.mediaData}" muted loop autoplay playsinline controlsList="nodownload" disablepictureinpicture></video>`;
+  if (p.media_type === 'video' && p.media_url) {
+    const embed = sbDriveEmbedUrl(p.media_url);
+    if (embed) {
+      return `<iframe src="${embed}" allow="autoplay" style="border:0;width:100%;height:100%;"></iframe>`;
+    }
+    return `<video src="${p.media_url}" muted loop autoplay playsinline controlsList="nodownload" disablepictureinpicture></video>`;
   }
   return `<span>Vista previa</span>`;
 }
@@ -30,10 +24,12 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-function renderProjects() {
+async function renderProjects() {
   const grid = document.getElementById('projectsGrid');
   if (!grid) return;
-  const projects = loadProjects();
+
+  grid.innerHTML = `<div class="portfolio-empty">Cargando proyectos...</div>`;
+  const projects = await sbGetProjects();
 
   if (projects.length === 0) {
     grid.innerHTML = `
@@ -44,25 +40,24 @@ function renderProjects() {
     return;
   }
 
-  grid.innerHTML = projects.map(p => `
+  grid.innerHTML = projects.map((p) => `
     <div class="card reveal">
       <div class="card-window">${renderProjectMedia(p)}</div>
       <h3>${escapeHtml(p.title)}</h3>
       <div class="card-desc">${escapeHtml(p.description)}</div>
       <div class="tag-row">
-        ${(p.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+        ${(p.tags || []).map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
       </div>
     </div>
   `).join('');
 
-  // Reactiva el efecto de aparición al hacer scroll para las tarjetas nuevas
   const revealEls = grid.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.isIntersecting) entry.target.classList.add('in');
     });
   }, { threshold: 0.15 });
-  revealEls.forEach(el => io.observe(el));
+  revealEls.forEach((el) => io.observe(el));
 }
 
 document.addEventListener('DOMContentLoaded', renderProjects);
