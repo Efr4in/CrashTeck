@@ -252,6 +252,7 @@ function initContactInfo() {
 let editingProjectId = null;
 let currentTags = [];
 let pendingMediaUrl = null;
+let currentCarouselUrls = [];
 let uploadingMedia = false;
 
 function initProjectsPanel() {
@@ -263,6 +264,7 @@ function initProjectsPanel() {
 
   document.getElementById('projMediaType').addEventListener('change', updateMediaFieldVisibility);
   document.getElementById('projMediaFile').addEventListener('change', handleFileSelect);
+  document.getElementById('projCarouselFile').addEventListener('change', handleCarouselFilesSelect);
   document.getElementById('projMediaUrl').addEventListener('input', updateMediaPreviewFromUrl);
 
   const tagInput = document.getElementById('projTagInput');
@@ -307,6 +309,9 @@ function thumbHtml(p) {
   if ((p.media_type === 'image' || p.media_type === 'gif') && p.media_url) {
     return `<img src="${p.media_url}" alt="">`;
   }
+  if (p.media_type === 'carousel' && p.media_urls && p.media_urls.length > 0) {
+    return `<img src="${p.media_urls[0]}" alt="">`;
+  }
   if (p.media_type === 'video' && p.media_url) {
     const embed = sbDriveEmbedUrl(p.media_url);
     if (embed) return `<iframe src="${embed}" style="border:0;"></iframe>`;
@@ -341,6 +346,7 @@ function openEditor(id) {
     document.getElementById('projMediaType').value = p.media_type || 'none';
     document.getElementById('projMediaUrl').value = p.media_type === 'video' ? (p.media_url || '') : '';
     pendingMediaUrl = (p.media_type === 'image' || p.media_type === 'gif') ? (p.media_url || null) : null;
+    currentCarouselUrls = p.media_type === 'carousel' ? [...(p.media_urls || [])] : [];
   } else {
     title.textContent = 'Nuevo proyecto';
     document.getElementById('projTitle').value = '';
@@ -349,11 +355,14 @@ function openEditor(id) {
     document.getElementById('projMediaType').value = 'none';
     document.getElementById('projMediaUrl').value = '';
     pendingMediaUrl = null;
+    currentCarouselUrls = [];
   }
 
   document.getElementById('projMediaFile').value = '';
   document.getElementById('projMediaFileName').textContent = 'Sin archivo seleccionado';
+  document.getElementById('projCarouselFile').value = '';
   renderTags();
+  renderCarouselList();
   updateMediaFieldVisibility();
   updateMediaPreview();
   editor.classList.add('show');
@@ -389,6 +398,7 @@ function addTag(tag) {
 function updateMediaFieldVisibility() {
   const type = document.getElementById('projMediaType').value;
   document.getElementById('mediaFileField').style.display = (type === 'image' || type === 'gif') ? 'block' : 'none';
+  document.getElementById('carouselField').style.display = (type === 'carousel') ? 'block' : 'none';
   document.getElementById('mediaUrlField').style.display = (type === 'video') ? 'block' : 'none';
   updateMediaPreview();
 }
@@ -416,6 +426,43 @@ async function handleFileSelect(evt) {
   } else {
     document.getElementById('projMediaFileName').textContent = 'Error al subir — probá de nuevo.';
   }
+}
+
+async function handleCarouselFilesSelect(evt) {
+  const files = Array.from(evt.target.files || []);
+  if (files.length === 0) return;
+
+  const nameEl = document.getElementById('projCarouselFileName');
+  uploadingMedia = true;
+  for (let i = 0; i < files.length; i++) {
+    nameEl.textContent = `Subiendo ${i + 1} de ${files.length}...`;
+    const url = await sbUploadMedia(files[i]);
+    if (url) currentCarouselUrls.push(url);
+  }
+  uploadingMedia = false;
+  nameEl.textContent = 'Podés elegir varias a la vez';
+  evt.target.value = '';
+  renderCarouselList();
+}
+
+function renderCarouselList() {
+  const wrap = document.getElementById('carouselList');
+  if (currentCarouselUrls.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.innerHTML = currentCarouselUrls.map((url, i) => `
+    <div class="admin-carousel-item">
+      <img src="${url}" alt="">
+      <button type="button" data-i="${i}">✕</button>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('button').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      currentCarouselUrls.splice(Number(btn.dataset.i), 1);
+      renderCarouselList();
+    });
+  });
 }
 
 function updateMediaPreviewFromUrl() {
@@ -459,6 +506,11 @@ async function saveProject() {
     ? document.getElementById('projMediaUrl').value.trim()
     : pendingMediaUrl;
 
+  if (mediaType === 'carousel' && currentCarouselUrls.length === 0) {
+    alert('Agregá al menos una imagen al carrusel, o cambiá el tipo de vista previa.');
+    return;
+  }
+
   const saveBtn = document.getElementById('saveProjectBtn');
   saveBtn.disabled = true;
 
@@ -468,7 +520,8 @@ async function saveProject() {
     description: document.getElementById('projDesc').value.trim(),
     tags: [...currentTags],
     media_type: mediaType,
-    media_url: mediaType === 'none' ? null : mediaUrl
+    media_url: mediaType === 'none' || mediaType === 'carousel' ? null : mediaUrl,
+    media_urls: mediaType === 'carousel' ? currentCarouselUrls : []
   });
 
   saveBtn.disabled = false;

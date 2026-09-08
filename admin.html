@@ -153,6 +153,7 @@
                 <option value="none">Sin vista previa</option>
                 <option value="image">Imagen</option>
                 <option value="gif">GIF</option>
+                <option value="carousel">Carrusel (varias imágenes)</option>
                 <option value="video">Video (URL)</option>
               </select>
             </div>
@@ -165,6 +166,17 @@
                 <span class="admin-file-name" id="projMediaFileName">Sin archivo seleccionado</span>
               </div>
               <div class="admin-media-warning">Recomendado: menos de 800 KB — se guarda en este navegador.</div>
+            </div>
+
+            <div class="admin-field" id="carouselField" style="display:none;">
+              <label for="projCarouselFile">Imágenes del carrusel</label>
+              <div class="admin-file-input">
+                <input type="file" id="projCarouselFile" accept="image/*" multiple>
+                <label for="projCarouselFile" class="admin-file-btn">+ Agregar imágenes</label>
+                <span class="admin-file-name" id="projCarouselFileName">Podés elegir varias a la vez</span>
+              </div>
+              <div class="admin-media-warning">Se muestran en orden, rotando cada 10 segundos. Con una sola imagen queda estática; con dos o más, gira en loop.</div>
+              <div class="admin-carousel-list" id="carouselList"></div>
             </div>
 
             <div class="admin-field" id="mediaUrlField" style="display:none;">

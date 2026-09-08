@@ -5,6 +5,15 @@
 // ============================================
 
 function renderProjectMedia(p) {
+  if (p.media_type === 'carousel' && p.media_urls && p.media_urls.length > 0) {
+    const slides = p.media_urls.map((url, i) =>
+      `<img src="${url}" alt="${escapeHtml(p.title)}" draggable="false" class="carousel-slide${i === 0 ? ' active' : ''}">`
+    ).join('');
+    const dots = p.media_urls.length > 1
+      ? `<div class="carousel-dots">${p.media_urls.map((_, i) => `<span class="carousel-dot${i === 0 ? ' active' : ''}"></span>`).join('')}</div>`
+      : '';
+    return `<div class="carousel-window">${slides}${dots}</div>`;
+  }
   if ((p.media_type === 'image' || p.media_type === 'gif') && p.media_url) {
     return `<img src="${p.media_url}" alt="${escapeHtml(p.title)}" draggable="false">`;
   }
@@ -22,6 +31,24 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str || '';
   return div.innerHTML;
+}
+
+// Cada carrusel rota solo — cada 10s, y en loop (con 2 imágenes vuelve a
+// alternar entre ambas; con 1 sola queda estático porque no hay nada que
+// rotar).
+function initCarousel(container) {
+  const slides = container.querySelectorAll('.carousel-slide');
+  const dots = container.querySelectorAll('.carousel-dot');
+  if (slides.length <= 1) return;
+
+  let index = 0;
+  setInterval(() => {
+    slides[index].classList.remove('active');
+    if (dots[index]) dots[index].classList.remove('active');
+    index = (index + 1) % slides.length;
+    slides[index].classList.add('active');
+    if (dots[index]) dots[index].classList.add('active');
+  }, 10000);
 }
 
 async function renderProjects() {
@@ -50,6 +77,8 @@ async function renderProjects() {
       </div>
     </div>
   `).join('');
+
+  grid.querySelectorAll('.carousel-window').forEach(initCarousel);
 
   const revealEls = grid.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries) => {
