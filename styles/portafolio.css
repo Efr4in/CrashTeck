@@ -28,7 +28,7 @@ main.portafolio{
   border-radius:16px;
   padding:26px;
   position:relative;
-  height:460px;
+  height:500px;
   display:flex;
   flex-direction:column;
   transform-style:preserve-3d;
@@ -41,7 +41,7 @@ main.portafolio{
   box-shadow:0 30px 60px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,118,0.15);
 }
 .card-window{
-  height:160px;flex-shrink:0;border-radius:10px;margin-bottom:18px;
+  height:150px;flex-shrink:0;border-radius:10px;margin-bottom:16px;
   position:relative;
   background:
     repeating-linear-gradient(135deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 10px),
@@ -90,21 +90,40 @@ main.portafolio{
   background:var(--gold);
   transform:scale(1.4);
 }
-.card h3{font-size:1.08rem;margin-bottom:8px;flex-shrink:0;}
+.card h3{font-size:1.08rem;margin-bottom:10px;flex-shrink:0;}
 .card .card-desc{
-  color:var(--text-muted);font-size:0.88rem;line-height:1.55;
+  color:var(--text-muted);font-size:0.88rem;line-height:1.6;
   flex:1 1 auto;
+  min-height:70px;
   overflow-y:auto;
-  margin-bottom:14px;
-  padding-right:6px;
+  margin-bottom:16px;
+  padding-right:8px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(201,168,118,0.5) rgba(255,255,255,0.04);
 }
-.card .card-desc::-webkit-scrollbar{width:4px;}
-.card .card-desc::-webkit-scrollbar-thumb{background:rgba(201,168,118,0.25);border-radius:4px;}
-.tag-row{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;}
+.card .card-desc::-webkit-scrollbar{width:6px;}
+.card .card-desc::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:4px;}
+.card .card-desc::-webkit-scrollbar-thumb{background:rgba(201,168,118,0.5);border-radius:4px;}
+.card .card-desc::-webkit-scrollbar-thumb:hover{background:rgba(201,168,118,0.75);}
+
+.tag-row{
+  display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0;
+  max-height:78px;
+  overflow-y:auto;
+  padding-right:8px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(201,168,118,0.5) rgba(255,255,255,0.04);
+}
+.tag-row::-webkit-scrollbar{width:6px;}
+.tag-row::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);border-radius:4px;}
+.tag-row::-webkit-scrollbar-thumb{background:rgba(201,168,118,0.5);border-radius:4px;}
+.tag-row::-webkit-scrollbar-thumb:hover{background:rgba(201,168,118,0.75);}
+
 .tag{
   font-size:0.68rem;padding:5px 11px;border-radius:999px;
   background:rgba(201,168,118,0.08);color:var(--gold-soft);
   border:1px solid rgba(201,168,118,0.2);
+  flex-shrink:0;
 }
 
 .portfolio-empty{
