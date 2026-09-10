@@ -342,6 +342,8 @@ function openEditor(id) {
     title.textContent = 'Editar proyecto';
     document.getElementById('projTitle').value = p.title || '';
     document.getElementById('projDesc').value = p.description || '';
+    document.getElementById('projRole').value = p.role || '';
+    document.getElementById('projGithub').value = p.github_url || '';
     currentTags = [...(p.tags || [])];
     document.getElementById('projMediaType').value = p.media_type || 'none';
     document.getElementById('projMediaUrl').value = p.media_type === 'video' ? (p.media_url || '') : '';
@@ -351,6 +353,8 @@ function openEditor(id) {
     title.textContent = 'Nuevo proyecto';
     document.getElementById('projTitle').value = '';
     document.getElementById('projDesc').value = '';
+    document.getElementById('projRole').value = '';
+    document.getElementById('projGithub').value = '';
     currentTags = [];
     document.getElementById('projMediaType').value = 'none';
     document.getElementById('projMediaUrl').value = '';
@@ -519,6 +523,8 @@ async function saveProject() {
     title,
     description: document.getElementById('projDesc').value.trim(),
     tags: [...currentTags],
+    role: document.getElementById('projRole').value.trim(),
+    github_url: document.getElementById('projGithub').value.trim(),
     media_type: mediaType,
     media_url: mediaType === 'none' || mediaType === 'carousel' ? null : mediaUrl,
     media_urls: mediaType === 'carousel' ? currentCarouselUrls : []

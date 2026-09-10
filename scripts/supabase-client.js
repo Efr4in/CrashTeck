@@ -55,7 +55,9 @@ async function sbSaveProject(project) {
     tags: project.tags,
     media_type: project.media_type,
     media_url: project.media_url,
-    media_urls: project.media_urls || []
+    media_urls: project.media_urls || [],
+    github_url: project.github_url || null,
+    role: project.role || null
   };
   if (project.id) {
     const { error } = await sb.from('projects').update(payload).eq('id', project.id);

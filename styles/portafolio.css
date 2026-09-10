@@ -31,6 +31,7 @@ main.portafolio{
   height:500px;
   display:flex;
   flex-direction:column;
+  cursor:pointer;
   transform-style:preserve-3d;
   transition:transform .35s ease, box-shadow .35s ease, border-color .35s ease;
   box-shadow:0 20px 40px -20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04);
@@ -133,3 +134,80 @@ main.portafolio{
   color:var(--text-muted);
   font-size:0.92rem;
 }
+
+/* ============================================
+   MODAL — detalle expandido de un proyecto (case study)
+   ============================================ */
+.project-modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(5,7,11,0.82);
+  backdrop-filter:blur(6px);
+  display:none;
+  align-items:center;justify-content:center;
+  z-index:5000;
+  padding:24px;
+}
+.project-modal-overlay.show{display:flex;}
+
+.project-modal{
+  width:min(720px, 100%);
+  max-height:88vh;
+  overflow-y:auto;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:20px;
+  position:relative;
+  box-shadow:0 40px 90px rgba(0,0,0,0.8);
+  animation:modal-pop-in .35s cubic-bezier(0.2,0.9,0.3,1);
+  scrollbar-width:thin;
+  scrollbar-color:rgba(201,168,118,0.5) rgba(255,255,255,0.04);
+}
+.project-modal::-webkit-scrollbar{width:8px;}
+.project-modal::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);}
+.project-modal::-webkit-scrollbar-thumb{background:rgba(201,168,118,0.5);border-radius:4px;}
+
+.project-modal-close{
+  position:absolute;top:16px;right:16px;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(10,13,19,0.75);
+  border:1px solid var(--line);
+  color:var(--cream);
+  font-size:0.85rem;
+  cursor:pointer;
+  z-index:2;
+  transition:border-color .2s ease, color .2s ease;
+}
+.project-modal-close:hover{border-color:var(--gold);color:var(--gold);}
+
+.project-modal-gallery{
+  padding:20px 20px 0;
+}
+.project-modal-gallery img,
+.project-modal-gallery iframe,
+.project-modal-gallery video{
+  width:100%;border-radius:10px;display:block;
+}
+.project-modal-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+  gap:10px;
+}
+.project-modal-grid img{aspect-ratio:16/10;object-fit:cover;}
+
+.project-modal-body{padding:26px 30px 32px;}
+.project-modal-body h2{
+  font-size:1.5rem;color:var(--cream);margin-bottom:8px;
+}
+.project-modal-role{
+  color:var(--gold-soft);font-size:0.85rem;margin-bottom:16px;
+  font-style:italic;
+}
+.project-modal-body .tag-row{
+  max-height:none;overflow:visible;margin-bottom:18px;
+}
+.project-modal-desc{
+  color:var(--text-muted);font-size:0.95rem;line-height:1.75;
+  margin-bottom:22px;
+  white-space:pre-line;
+}
+.project-modal-actions{display:flex;gap:12px;}
