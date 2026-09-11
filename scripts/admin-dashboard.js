@@ -98,12 +98,26 @@ async function initDashboard() {
 
 function initTabs() {
   const buttons = document.querySelectorAll('.admin-tabs button');
+  const tabsContainer = document.querySelector('.admin-tabs');
+  const toggleBtn = document.getElementById('adminTabsToggle');
+  const toggleLabel = document.getElementById('adminTabsToggleLabel');
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      tabsContainer.classList.toggle('open');
+      toggleBtn.classList.toggle('open');
+    });
+  }
+
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
       buttons.forEach((b) => b.classList.toggle('active', b === btn));
       document.querySelectorAll('.admin-panel-view').forEach((v) => {
         v.classList.toggle('active', v.id === 'view-' + btn.dataset.tab);
       });
+      if (toggleLabel) toggleLabel.textContent = btn.textContent.trim();
+      if (tabsContainer) tabsContainer.classList.remove('open');
+      if (toggleBtn) toggleBtn.classList.remove('open');
     });
   });
 }

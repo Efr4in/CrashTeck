@@ -354,3 +354,67 @@ body.admin-body{
 .page-status-row .psr-label{width:100px;flex-shrink:0;font-size:0.85rem;color:var(--cream);}
 .page-status-row .tag-bar-track{flex:1;}
 .page-status-row .psr-frac{font-size:0.76rem;color:var(--text-muted);width:44px;text-align:right;}
+
+/* ============================================
+   RESPONSIVE — dashboard en móvil/tablet
+   ============================================ */
+.admin-tabs-toggle{
+  display:none;
+  width:100%;
+  align-items:center;justify-content:space-between;
+  padding:14px 20px;
+  background:var(--bg-panel);
+  border:none;border-bottom:1px solid var(--line);
+  color:var(--cream);
+  font-family:'Manrope',sans-serif;font-weight:600;font-size:0.9rem;
+  cursor:pointer;
+}
+.admin-tabs-chevron{
+  color:var(--gold);
+  transition:transform .25s ease;
+}
+.admin-tabs-toggle.open .admin-tabs-chevron{transform:rotate(180deg);}
+
+@media (max-width:860px){
+  .admin-topbar{
+    flex-wrap:wrap;gap:12px;
+    padding:16px 5vw;
+  }
+  .admin-topbar .brand{font-size:0.95rem;}
+  .admin-topbar-actions a,
+  .admin-topbar-actions button{padding:8px 12px;font-size:0.74rem;}
+
+  .admin-body-area{flex-direction:column;}
+
+  .admin-tabs-toggle{display:flex;}
+
+  .admin-tabs{
+    width:100%;
+    border-right:none;
+    border-bottom:1px solid var(--line);
+    padding:0;
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .3s ease;
+  }
+  .admin-tabs.open{max-height:280px;}
+  .admin-tabs button{
+    border-left:none;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    padding:14px 20px;
+  }
+  .admin-tabs button.active{border-left:none;border-left:3px solid var(--gold);padding-left:17px;}
+
+  .admin-panel{padding:26px 5vw;max-height:none;overflow-y:visible;}
+
+  .stat-grid{grid-template-columns:repeat(auto-fit, minmax(140px,1fr));gap:12px;}
+  .stat-card{padding:14px 16px;}
+  .stat-value{font-size:1.35rem;}
+
+  .overview-panel{padding:16px;}
+
+  .tag-bar-row .tag-bar-label,
+  .page-status-row .psr-label{width:76px;font-size:0.74rem;}
+
+  .admin-field-group h3{font-size:0.68rem;}
+}
