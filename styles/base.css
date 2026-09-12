@@ -18,6 +18,16 @@
 
 *{margin:0;padding:0;box-sizing:border-box;}
 
+/* Foco visible por teclado — dorado, consistente en todo el sitio.
+   Solo aparece navegando con Tab, no al hacer clic con el mouse. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
 html{scroll-behavior:smooth;}
 
 body{

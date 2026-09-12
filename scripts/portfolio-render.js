@@ -10,7 +10,7 @@ let projectsData = [];
 function renderProjectMedia(p) {
   if (p.media_type === 'carousel' && p.media_urls && p.media_urls.length > 0) {
     const slides = p.media_urls.map((url, i) =>
-      `<img src="${url}" alt="${escapeHtml(p.title)}" draggable="false" class="carousel-slide${i === 0 ? ' active' : ''}">`
+      `<img src="${url}" alt="${escapeHtml(p.title)}" draggable="false" loading="lazy" class="carousel-slide${i === 0 ? ' active' : ''}">`
     ).join('');
     const dots = p.media_urls.length > 1
       ? `<div class="carousel-dots">${p.media_urls.map((_, i) => `<span class="carousel-dot${i === 0 ? ' active' : ''}"></span>`).join('')}</div>`
@@ -18,7 +18,7 @@ function renderProjectMedia(p) {
     return `<div class="carousel-window">${slides}${dots}</div>`;
   }
   if ((p.media_type === 'image' || p.media_type === 'gif') && p.media_url) {
-    return `<img src="${p.media_url}" alt="${escapeHtml(p.title)}" draggable="false">`;
+    return `<img src="${p.media_url}" alt="${escapeHtml(p.title)}" draggable="false" loading="lazy">`;
   }
   if (p.media_type === 'video' && p.media_url) {
     const embed = sbDriveEmbedUrl(p.media_url);
@@ -97,7 +97,7 @@ function galleryHtml(p) {
   if (urls.length === 0) return '';
 
   return `<div class="project-modal-grid">
-    ${urls.map((url) => `<img src="${url}" alt="${escapeHtml(p.title)}" draggable="false">`).join('')}
+    ${urls.map((url) => `<img src="${url}" alt="${escapeHtml(p.title)}" draggable="false" loading="lazy">`).join('')}
   </div>`;
 }
 
@@ -154,7 +154,7 @@ async function renderProjects() {
   buildProjectModal();
 
   grid.innerHTML = projectsData.map((p) => `
-    <div class="card reveal" data-project-id="${p.id}">
+    <div class="card reveal" data-project-id="${p.id}" tabindex="0" role="button" aria-label="Ver detalle de ${escapeHtml(p.title)}">
       <div class="card-window">${renderProjectMedia(p)}</div>
       <h3>${escapeHtml(p.title)}</h3>
       <div class="card-desc">${escapeHtml(p.description)}</div>
@@ -168,6 +168,12 @@ async function renderProjects() {
 
   grid.querySelectorAll('.card').forEach((card) => {
     card.addEventListener('click', () => openProjectModal(card.dataset.projectId));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openProjectModal(card.dataset.projectId);
+      }
+    });
   });
 
   const revealEls = grid.querySelectorAll('.reveal');
